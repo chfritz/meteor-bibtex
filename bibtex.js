@@ -395,16 +395,16 @@ function BibtexParser() {
     _.each(this.mapping, function(val, type) {
         regex[type] = new RegExp( "(" +
             _.map(_.keys(val), function(latex) {
-                latex = latex.replace(/\\/g, "\\\\");
+                latex = latex.replace(/\\/g, "\\\\").trim();
                 _.each(["*", ".", "+", "?", "{", "}", "(", ")"],
                        function(c) {
                            latex = latex.replace(
                                new RegExp("\\" + c, "g"), "\\" + c);
                        });
                 return latex;
-            }).join("|")+ ")" + (type == "diacritic" ? "{?(.)}?" : ""), "g");
+            }).join("|")+ ")" + (type == "diacritic" ? "{?(.)}?" : "\\b"), "g");
     });
-    // console.log("regex", this.regex);
+    console.log("regex", this.regex);
     // console.log("done");   
 }
 
