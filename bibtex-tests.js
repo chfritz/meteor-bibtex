@@ -35,7 +35,7 @@ _.each(a, function(val, key) {
             _.each(_.keys(val), function(field) {
                 if (field != "bibtex") {
                     // console.log(val[field], " =?= ", valB[field]);
-                    test.equal(val[field], valB[field], field);
+                    test.equal(valB[field], val[field], field);
                 }
             });
         }

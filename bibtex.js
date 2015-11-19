@@ -320,18 +320,18 @@ function BibtexParser() {
 
 
     this.convert = function(raw) {
-        // Convert Latex/Bibtex special characters to UTF-8 equivalents        
-        // for (var i = 0; i < this.CHARCONV_.length; i++) {
-        //     var re = this.CHARCONV_[i][0];
-        //     var rep = this.CHARCONV_[i][1];
-        //     raw = raw.replace(re, rep);
-        // }
-        // #HERE: repeat this step without braces in the [i][0] regex;
-
         var self = this;
-        var rtv = raw.replace(this.regex, function(latex) {
+        var rtv = raw.replace(this.regex.normal, function(whole, latex) {
             // console.log("matched", latex);
-            return self.mapping[latex];
+            return self.mapping.normal[latex];
+        });
+
+        var rtv = rtv.replace(this.regex.diacritic, function(whole, latex, nextChar) {
+            // diacritic unicode characters go *after* the character
+            // to be modified, whereas in latex the command goes
+            // before the character, e.g., "\=P" -> "P\u0304"
+            console.log("replacing", whole, "with", nextChar + self.mapping.diacritic[latex]);
+            return nextChar + self.mapping.diacritic[latex];
         });
 
         // now run through once more and remove all { and } outside of
@@ -367,37 +367,44 @@ function BibtexParser() {
                 && character.latex[0].replace("{","").replace("}","").length > 1
                 && character.latex[0].indexOf("\\") >= 0
                 && id.substr(0,2) == "U0"
-                && character.$.type != "diacritic" // things like \^ and \'
+                // && character.$.type != "diacritic" // things like \^ and \'
                ) {
                 var latex = character.latex[0];
                 var unicode = String.fromCharCode(
                     parseInt( id.substr( id.length - 5), 16));
                 // console.log(latex, unicode, parseInt( id.substr( id.length - 5), 16));
-                if (!memo[latex]) { // do not override existing (e.g.,
-                                    // \'{E}) exists twice
-                    memo[latex] = unicode;
-                    if (latex.match("{.}$")) {
-                        memo[latex.replace("{","").replace("}","")] = unicode;
+                if (character.$.type == "diacritic") { // things like \^ and \'
+                    memo.diacritic[latex] = unicode;
+                } else {
+                    if (!memo.normal[latex]) { // do not override existing (e.g.,
+                        // \'{E}) exists twice
+                        memo.normal[latex] = unicode;
+                        if (latex.match("{.}$")) {
+                            memo.normal[latex.replace("{","").replace("}","")]
+                                = unicode;
+                        }
                     }
                 }
             }
             return memo;
-        }, {});
+        }, {normal: {}, diacritic: {}});
     // console.log("mapping", this.mapping);
     // console.log("mapping length", this.mapping.length);
-    if (this.mapping == {}) throw new Meteor.Error("mapping is empty!");
-    this.regex = new RegExp(
-        _.map(_.keys(this.mapping), function(latex) {
-            latex = latex.replace(/\\/g, "\\\\");
-            _.each(["*", ".", "+", "?", "{", "}", "(", ")"],
-                   function(c) {
-                       latex = latex.replace(
-                           new RegExp("\\" + c, "g"), "\\" + c);
-                   });
-            return latex;
-        }).join("|"), "g");
-    
-    // console.log("regex", this.regex);
+    if (this.mapping.normal == {}) throw new Meteor.Error("mapping is empty!");
+    regex = this.regex = {};
+    _.each(this.mapping, function(val, type) {
+        regex[type] = new RegExp( "(" +
+            _.map(_.keys(val), function(latex) {
+                latex = latex.replace(/\\/g, "\\\\");
+                _.each(["*", ".", "+", "?", "{", "}", "(", ")"],
+                       function(c) {
+                           latex = latex.replace(
+                               new RegExp("\\" + c, "g"), "\\" + c);
+                       });
+                return latex;
+            }).join("|")+ "){?(.)}?" , "g");
+    });
+    console.log("regex", this.regex);
     // console.log("done");   
 }
 
