@@ -30,7 +30,7 @@ _.each(a, function(val, key) {
     // console.log(val, "=?=", b[key]);
     Tinytest.add(key, function (test) {
         var valB = b[key];
-        test.isNotUndefined(valB, "key not found");
+        test.isNotUndefined(valB, "key not found: " + key);
         if (valB) {
             _.each(_.keys(val), function(field) {
                 if (field != "bibtex") {

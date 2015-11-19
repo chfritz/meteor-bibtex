@@ -144,7 +144,7 @@ function BibtexParser() {
             return this.convert(this.value_quotes());
         } else {
             var k = this.key();
-            if (this.strings[k.toLowerCase()]) {
+            if (this.strings[k]) {
                 return this.strings[k];
             } else if (k.match("^[0-9]+$")) {
                 return k;
@@ -175,7 +175,7 @@ function BibtexParser() {
             if (this.input[this.pos].match("[a-zA-Z0-9_:\\./-]")) {
                 this.pos++
             } else {
-                return this.input.substring(start, this.pos).toLowerCase();
+                return this.input.substring(start, this.pos);
             }
         }
     }
@@ -194,7 +194,7 @@ function BibtexParser() {
                     // no "and"s, try splitting by every other comma
                     var result = val[0].match(/[^,]+,[^,]+/g);
                     if (result) {
-                        val = result;
+                        val = _.map(result, function(part) { return part.trim(); });
                     }
                 }
 
@@ -330,7 +330,7 @@ function BibtexParser() {
             // diacritic unicode characters go *after* the character
             // to be modified, whereas in latex the command goes
             // before the character, e.g., "\=P" -> "P\u0304"
-            console.log("replacing", whole, "with", nextChar + self.mapping.diacritic[latex]);
+            // console.log("replacing", whole, "with", nextChar + self.mapping.diacritic[latex]);
             return nextChar + self.mapping.diacritic[latex];
         });
 
@@ -402,9 +402,9 @@ function BibtexParser() {
                                new RegExp("\\" + c, "g"), "\\" + c);
                        });
                 return latex;
-            }).join("|")+ "){?(.)}?" , "g");
+            }).join("|")+ ")" + (type == "diacritic" ? "{?(.)}?" : ""), "g");
     });
-    console.log("regex", this.regex);
+    // console.log("regex", this.regex);
     // console.log("done");   
 }
 
