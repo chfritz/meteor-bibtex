@@ -72,7 +72,7 @@ function BibtexParser() {
         if (this.input.substring(this.pos, this.pos+s.length) == s) {
             this.pos += s.length;
         } else {
-            throw "Token mismatch, expected " + s + ", found " + this.input.substring(this.pos);
+            throw "Token mismatch, expected " + s + ", found " + this.input.substr(this.pos, 300);
         }
         this.skipWhitespace();
     }
@@ -186,18 +186,28 @@ function BibtexParser() {
             this.match("=");
             var val = this.value();
 
+            // ------ Parse names ------
             if (key == "author"
                 || key == "editor") {
-                // Parse names
                 val = val.split(" and ");
                 if (val.length == 1) {
-                    // no " and "s, try splitting by every other comma
+                    // no "and"s, try splitting by every other comma
                     var result = val[0].match(/[^,]+,[^,]+/g);
                     if (result) {
                         val = result;
                     }
-                }                
+                }
+
+                val = _.map(val, function(name) {
+                    if (name.indexOf(",") < 0) {
+                        var parts = name.split(" ");
+                        var length = parts.length;
+                        return parts[length-1] + ", "
+                            + parts.slice(0, length-1).join(" ");
+                    } else return name;
+                });
             }
+            // -------------------------
             
             return [ key, val ];
         } else {
@@ -260,7 +270,11 @@ function BibtexParser() {
     }
 
     this.entry = function(d) {
-        return this.entry_body(d);
+        // try { // TODO, #HERE
+            return this.entry_body(d);
+        // } catch (e) {
+            // console.log("exception", e);
+        // }
     }
 
     this.bibtex = function() {
@@ -290,8 +304,11 @@ function BibtexParser() {
                 _.each(["author", "editor"], function(role) {
                     if (entry[role]) {
                         entry[role + "_short"] = _.map(entry[role], function(a) {
-                            // #HERE, TODO
-                            return a;
+                            var parts = a.split(", ");
+                            return parts[0] + ", "
+                                + parts[1][0]
+                            // for people like J Benton:
+                                + (parts[1].length > 1 ? "." : "");
                         });
                     }
                 });
@@ -313,7 +330,7 @@ function BibtexParser() {
 
         var self = this;
         var rtv = raw.replace(this.regex, function(latex) {
-            console.log("matched", latex);
+            // console.log("matched", latex);
             return self.mapping[latex];
         });
 

@@ -14,7 +14,7 @@ Package.onUse(function(api) {
     api.versionsFrom('1.2.1');
     api.use('ecmascript');
     api.use('underscore');
-    api.use('peerlibrary:xml2js');
+    api.use('peerlibrary:xml2js@0.4.8_1');
     api.addFiles('bibtex.js');
     api.export('Bibtex', ['server']);
     api.addAssets('unicode.xml', ['server']);  // #TODO: add to client as well?
@@ -23,7 +23,11 @@ Package.onUse(function(api) {
 Package.onTest(function(api) {
     api.use('ecmascript');
     api.use('tinytest');
+    api.use('underscore');
     api.use('chfritz:bibtex');
     api.addFiles('bibtex-tests.js', ['server']);
-    api.addAssets('test.bib', ['server']);
+    api.addAssets('test/test1.bib', ['server']);
+    api.addAssets('test/test1.json', ['server']);
+    api.addAssets('test/test2.bib', ['server']);
+    api.addAssets('test/test2.json', ['server']);
 });
