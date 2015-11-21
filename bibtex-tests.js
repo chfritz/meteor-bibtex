@@ -1,6 +1,7 @@
 
-var a = _.indexBy(JSON.parse(Assets.getText("test/test1.json")), 'id');
-var b = Bibtex.parse(Assets.getText("test/test1.bib"));
+var test = 1;
+var a = _.indexBy(JSON.parse(Assets.getText("test/test"+test+".json")), 'id');
+var b = Bibtex.parse(Assets.getText("test/test"+test+".bib"));
 _.each(b, function(e, key) {
     e.key = key;
     e.id = key;
@@ -34,8 +35,14 @@ _.each(a, function(val, key) {
         if (valB) {
             _.each(_.keys(val), function(field) {
                 if (field != "bibtex") {
-                    // console.log(val[field], " =?= ", valB[field]);
-                    test.equal(valB[field], val[field], field);
+                    console.log(val[field], " =?= ", valB[field]);
+                    if (val[field] instanceof Array) {
+                        _.each(_.zip(valB[field], val[field]), function(pair) {
+                            test.equal(pair[0], pair[1], field);
+                        });
+                    } else {
+                        test.equal(valB[field], val[field], field);
+                    }
                 }
             });
         }

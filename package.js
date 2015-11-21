@@ -13,7 +13,8 @@ Package.describe({
 Package.onUse(function(api) {
     api.versionsFrom('1.2.1');
     api.use('ecmascript');
-    api.use('underscore');
+    // api.use('underscore');
+    api.use('mixmax:underscore-updates@0.2.3');
     api.use('peerlibrary:xml2js@0.4.8_1');
     api.addFiles('bibtex.js');
     api.export('Bibtex', ['server']);
@@ -23,7 +24,8 @@ Package.onUse(function(api) {
 Package.onTest(function(api) {
     api.use('ecmascript');
     api.use('tinytest');
-    api.use('underscore');
+    // api.use('underscore');
+    api.use('mixmax:underscore-updates@0.2.3');
     api.use('chfritz:bibtex');
     api.addFiles('bibtex-tests.js', ['server']);
     api.addAssets('test/test1.bib', ['server']);
