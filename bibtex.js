@@ -117,10 +117,10 @@ function BibtexParser() {
                     this.match("}");
                     return this.input.substring(start, end);
                 }
-            } else if (this.input[this.pos] == '{') {
+            } else if (this.input[this.pos] == '{' && this.input[this.pos-1] != '\\') {
                 bracecount++;
             } else if (this.pos == this.input.length-1) {
-                throw "Unterminated value";
+                throw "Unterminated value" + this.input.substr(start, 100);
             }
             this.pos++;
         }
@@ -135,7 +135,7 @@ function BibtexParser() {
                 this.match('"');
                 return this.input.substring(start, end);
             } else if (this.pos == this.input.length-1) {
-                throw "Unterminated value:" + this.input.substring(start);
+                throw "Unterminated value:" + this.input.substr(start, 100);
             }
             this.pos++;
         }
@@ -154,7 +154,7 @@ function BibtexParser() {
             } else if (k.match("^[0-9]+$")) {
                 return k;
             } else {
-                throw "Value expected:" + this.input.substring(start);
+                throw "Value expected:" + this.input.substr(start, 100);
             }
         }
         return value;     
@@ -274,25 +274,41 @@ function BibtexParser() {
                     // console.log("parsed", this.currentEntry);
                 }            
                 this.match("}");
+
                 if (isEntry) {
                     var entry = this.entries[this.currentEntry];
+
+                    // ------ Add original bibtex as field
                     entry.bibtex =
                         this.input.substr(this.lastStart,
                                           this.pos - this.lastStart);
 
-                    // author/editor_short:
+                    // ------ Generate author/editor_short:
                     _.each(["author", "editor"], function(role) {
                         if (entry[role]) {
-                            entry[role + "_short"] = _.map(entry[role], function(a) {
-                                var parts = a.split(", ");
-                                return parts[0] + ", "
-                                    + _.map(parts[1].split(" "), function(part) {
-                                        // console.log(part);
-                                        return part[0]
-                                        // for people like J Benton:
-                                            + (part.length > 1 ? "." : "");
-                                    }).join(" ");
-                            });
+                            // console.log("create short for", entry[role]);
+                            entry[role + "_short"] =
+                                // _.map(entry[role], function(a) {
+                                //     var parts = a.split(", ");
+                                //     return parts[0] + ", "
+                                //         + _.map(parts[1].split(" "), function(part) {
+                                //             // console.log(part);
+                                //             return part[0]
+                                //             // for people like J Benton:
+                                //                 + (part.length > 1 ? "." : "");
+                                //         }).join(" ");
+                                // });
+                                _.map(entry[role], function(name) {
+                                    var last = name.lastnames.join(" ")
+                                        + (name.firstnames.length > 0 ? "," : "");
+                                    return name.propositions.concat(
+                                        last,
+                                        _.map(name.firstnames, function(firstname) {
+                                            return firstname[0]
+                                                + (firstname.length > 1 ? "." : "");
+                                        })).join(" ");
+                                });
+                            // console.log("short", entry[role + "_short"]);
                         }
                     });
                 }
@@ -316,52 +332,6 @@ function BibtexParser() {
         var next = string.charCodeAt(0);
         return (next >= 97 && next <= 122);
     }   
-
-    // /** whether string is 
-    //     [van/de/de la..] Lastnames, Firstnames */
-    // function nameOfSecondKind(string) {
-    //     var bracketCount = 0;
-    //     for (var i = 0; i < string.length; i++) {
-    //         if (string[i] == "{")
-    //             bracketCount++;
-    //         else if (string[i] == "}")
-    //             bracketCount--;
-    //         else if (string[i] == "," && bracketCount == 0)
-    //             return true;
-    //     }
-    //     return false;
-    // }
-
-    // function parsePropositions(obj) {
-    //     var propositions = [];
-    //     // we recognize anything that starts with a lower case letter
-    //     // as a proposition
-    //     while (obj.input.length > 0 && firstIsLowerCase(obj.input)) {
-    //         console.log(obj.input);
-    //         // this implies that we do not allow unicode characters in
-    //         // propositions, which should be fine
-    //         var matched = obj.input.match(/([a-z\-]*) *(.*)/);
-
-    //         if (matched) {
-    //             propositions.push(matched[1]);
-    //             obj.input = matched[2];
-    //         } else throw "Illegal propositions:" + obj.input;
-    //     }
-    //     obj.propositions = propositions;
-    // } 
-
-    // function parseNames(obj) {
-    //     var names = [];
-    //     while (obj.input.length > 0 && !firstIsLowerCase(obj.input)) {
-    //         console.log(obj.input);
-    //         var matched = obj.input.match(/ *([A-Za-z\-\'\.]*) *(.*)| *{([^}]*)} *(.*)/);
-    //         if (matched && matched[1].length > 0) {
-    //             names.push(matched[1]);
-    //             obj.input = matched[2];
-    //         } else break;
-    //     }
-    //     obj.names = names;
-    // }
 
     /** parse a name into parts, respecting brackets, and keeping
         commas in separate groups */
@@ -483,11 +453,14 @@ function BibtexParser() {
 
     this.convert = function(raw, key) {
         var self = this;
+
+        raw = raw.replace("\n", " ");
+        
+        // ------- Translate latex special characters into unicode
         var rtv = raw.replace(this.regex.normal, function(whole, latex) {
             // console.log("matched", latex);
             return self.mapping.normal[latex];
         });
-
         var rtv = rtv.replace(this.regex.diacritic, function(whole, latex, nextChar) {
             // diacritic unicode characters go *after* the character
             // to be modified, whereas in latex the command goes
@@ -498,7 +471,8 @@ function BibtexParser() {
 
         // ------ Parse names ------
         if (key == "author" || key == "editor") {
-            
+                        
+            // split names by "and" or every other comma
             rtv = _.map(rtv.split(/\band\b/), function(part) {
                 return part.trim();
             });
@@ -516,28 +490,11 @@ function BibtexParser() {
                 parsed = parseName(name);
                 // console.log("parsed", parsed);
                 
-                if (name.indexOf(",") < 0) {
-                    var parts = name.split(" "); // #TODO: respect {} here
-                    // var parts = name.split(/[^{]+ [^}]+/g); // #TODO: respect {} here
-                    var length = parts.length;
-                    // move last name first, then comma, then rest
-                    // #HERE #TODO: this will get Johan de Kleer wrong
-                    // ("Kleer, Johan de" instead of "de Kleer,
-                    // Johan") --> recognize lower case name parts and
-                    // make them start of last name; also: don't break
-                    // {}'s (see Linares Lopez)
-                    return parts[length-1] + ", "
-                        + parts.slice(0, length-1).join(" ");
-                } else return name; // this is not safe either, e.g.,
-                                    // Michael King, Jr. would
-                                    // become Jr., Michael King
+                return parsed;
             });
         }
-        // -------------------------
-
         
-        // now run through once more and remove all { and } outside of
-        // $'s:
+        // ------ Remove all remaining { and } outside of $'s:
         function cleanBrackets(value) {        
             var mathmode = false;
             return _.reduce(value, function(memo, character) {
@@ -552,7 +509,8 @@ function BibtexParser() {
             }, "");
         }
         if (rtv instanceof Array) {
-            rtv = _.map(rtv, cleanBrackets);
+            // rtv = _.map(rtv, cleanBrackets);
+            // arrays, i.e., names, are already clean
         } else {
             rtv = cleanBrackets(rtv);
         }

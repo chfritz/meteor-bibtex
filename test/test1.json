@@ -216,5 +216,74 @@
         "url": "http://dx.doi.org/10.1016/j.artint.2015.01.004", 
         "volume": "223", 
         "year": "2015"
+    }, 
+    {
+        "author": [
+            "Linares Ĺopez, Carlos", 
+            "de la Fritz Lang O'Brian, Jr. Christian Wilhelm", 
+            "de la Fritz Lang O'Brian, Christian Wilhelm", 
+            "Jr.", 
+            "Fritz Lang O'Brian, Jr. Christian Wilhelm", 
+            "O'Brian, Christian Wilhelm Fritz Lang", 
+            "Jr."
+        ], 
+        "author_short": [
+            "Linares Ĺopez, C.", 
+            "de la Fritz Lang O'Brian, J. C. W.", 
+            "de la Fritz Lang O'Brian, C. W.", 
+            "Jr.", 
+            "Fritz Lang O'Brian, J. C. W.", 
+            "O'Brian, C. W. F. L.", 
+            "Jr."
+        ], 
+        "bibtex": "@article{ hardtest,\n  author = {Carlos {Linares L{́{o}}pez} and\n               Christian Wilhelm de la Fritz Lang O'Brian, Jr. and \n               de la Fritz Lang O'Brian, Christian Wilhelm, Jr. and\n               Christian Wilhelm {Fritz Lang O'Brian}, Jr. and \n               Fritz Lang O'Brian, Christian Wilhelm, Jr.\n               },\n  title = {testing bibtex parser}\n}", 
+        "bibtype": "article", 
+        "id": "hardtest", 
+        "key": "hardtest", 
+        "title": "testing bibtex parser", 
+        "type": "article"
+    }, 
+    {
+        "abstract": "Mossbauer spectroscopy was used in this study to investigate magnetite nanoparticles, obtained by spray pyrolysis and thermal treatment under H-2 reduction atmosphere. Room temperature XRD data indicate the formation of magnetite phase and a second phase (metallic iron) which amount increases as the time of reduction under H2 is increased. While room temperature Mossbauer data confirm the formation of the cubic phase of magnetite and the occurrence of metallic iron phase, the more complex features of 77 K-Mossbauer spectra suggest the occurrence of electronic localization favored by the different crystalline phase of magnetite at low temperatures which transition to the lower symmetry structure should occur at T similar to 120 K (Verwey transition).", 
+        "author": [
+            "Marques, R. F. C.", 
+            "Rodriguez, A. F. R.", 
+            "a. H. Coaquira, J.", 
+            "Santos, J. G.", 
+            "Garg, V. K.", 
+            "Jafelicci, M.", 
+            "Ribeiro, S. J. L.", 
+            "Verelst, M.", 
+            "Dexpert-Ghys, J.", 
+            "Morais, P. C."
+        ], 
+        "author_short": [
+            "Marques, R. F. C.", 
+            "Rodriguez, A. F. R.", 
+            "a. H. Coaquira, J.", 
+            "Santos, J. G.", 
+            "Garg, V. K.", 
+            "Jafelicci, M.", 
+            "Ribeiro, S. J. L.", 
+            "Verelst, M.", 
+            "Dexpert-Ghys, J.", 
+            "Morais, P. C."
+        ], 
+        "bibtex": "@article{ marques_mossbauer_2009,\n  title = {Mossbauer spectroscopy study of iron oxide nanoparticles obtained by spray pyrolysis},\n  volume = {189},\n  issn = {0304-3843},\n  doi = {10.1007/s10751-009-9911-1},\n  abstract = {Mossbauer spectroscopy was used in this study to investigate magnetite nanoparticles, obtained by spray pyrolysis and thermal treatment under H-2 reduction atmosphere. Room temperature {XRD} data indicate the formation of magnetite phase and a second phase (metallic iron) which amount increases as the time of reduction under H2 is increased. While room temperature Mossbauer data confirm the formation of the cubic phase of magnetite and the occurrence of metallic iron phase, the more complex features of 77 K-Mossbauer spectra suggest the occurrence of electronic localization favored by the different crystalline phase of magnetite at low temperatures which transition to the lower symmetry structure should occur at T similar to 120 K (Verwey transition).},\n  language = {English},\n  number = {1-3},\n  journal = {Hyperfine Interactions},\n  author = {Marques, R. F. C. and Rodriguez, A. F. R. and Coaquira, J. a. H. and Santos, J. G. and Garg, V. K. and Jafelicci, M. and Ribeiro, S. J. L. and Verelst, M. and Dexpert-Ghys, J. and Morais, P. C.},\n  month = {February},\n  year = {2009},\n  keywords = {albumin, hematite, Magnetite, Mossbauer spectroscopy, spray pyrolysis},\n  pages = {159--166}\n}", 
+        "bibtype": "article", 
+        "doi": "10.1007/s10751-009-9911-1", 
+        "id": "marques_mossbauer_2009", 
+        "issn": "0304-3843", 
+        "journal": "Hyperfine Interactions", 
+        "key": "marques_mossbauer_2009", 
+        "keywords": "albumin, hematite, Magnetite, Mossbauer spectroscopy, spray pyrolysis", 
+        "language": "English", 
+        "month": "February", 
+        "number": "1-3", 
+        "pages": "159--166", 
+        "title": "Mossbauer spectroscopy study of iron oxide nanoparticles obtained by spray pyrolysis", 
+        "type": "article", 
+        "volume": "189", 
+        "year": "2009"
     }
 ]

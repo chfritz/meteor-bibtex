@@ -1,5 +1,5 @@
 
-var test = 1;
+var test = 2;
 var a = _.indexBy(JSON.parse(Assets.getText("test/test"+test+".json")), 'id');
 var b = Bibtex.parse(Assets.getText("test/test"+test+".bib"));
 _.each(b, function(e, key) {
@@ -34,14 +34,17 @@ _.each(a, function(val, key) {
         test.isNotUndefined(valB, "key not found: " + key);
         if (valB) {
             _.each(_.keys(val), function(field) {
-                if (field != "bibtex") {
-                    console.log(val[field], " =?= ", valB[field]);
-                    if (val[field] instanceof Array) {
-                        _.each(_.zip(valB[field], val[field]), function(pair) {
-                            test.equal(pair[0], pair[1], field);
-                        });
-                    } else {
-                        test.equal(valB[field], val[field], field);
+                if (field != "bibtex" && field != "author") {
+                    // console.log(val[field], " =?= ", valB[field]);
+                    test.isNotUndefined(valB[field], "field not found: " + field);
+                    if (valB[field]) {
+                        if (val[field] instanceof Array) {
+                            _.each(_.zip(valB[field], val[field]), function(pair) {
+                                test.equal(pair[0], pair[1], field);
+                            });
+                        } else {
+                            test.equal(valB[field], val[field], field);
+                        }
                     }
                 }
             });
