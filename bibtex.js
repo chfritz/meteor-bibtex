@@ -149,7 +149,7 @@ function BibtexParser() {
             return this.convert(this.value_quotes(), key);
         } else {
             var k = this.key();
-            if (this.strings[k]) {
+            if (this.strings[k.toLowerCase()]) {
                 return this.strings[k];
             } else if (k.match("^[0-9]+$")) {
                 return k;
@@ -178,7 +178,7 @@ function BibtexParser() {
                 throw "Runaway key";
             }
             
-            if (this.input[this.pos].match("[a-zA-Z0-9_:\\./-]")) {
+            if (this.input[this.pos].match("[a-zA-Z0-9_:\\./\?-]")) {
                 this.pos++
             } else {
                 return this.input.substring(start, this.pos);
@@ -193,7 +193,7 @@ function BibtexParser() {
             var val = this.value(key);
             return [ key, val ];
         } else {
-            throw "... = value expected, equals sign missing:" + this.input.substring(this.pos);
+            throw "... = value expected, equals sign missing:" + this.input.substr(this.pos, 100);
         }
     }
 
@@ -454,7 +454,8 @@ function BibtexParser() {
     this.convert = function(raw, key) {
         var self = this;
 
-        raw = raw.replace("\n", " ");
+        // raw = raw.replace("\n", " ");
+        raw = raw.replace(/[\n\t\r ]+/g, " "); // condense whitespace
         
         // ------- Translate latex special characters into unicode
         var rtv = raw.replace(this.regex.normal, function(whole, latex) {
@@ -562,7 +563,8 @@ function BibtexParser() {
     _.each(this.mapping, function(val, type) {
         regex[type] = new RegExp( "(" +
             _.map(_.keys(val), function(latex) {
-                latex = latex.replace(/\\/g, "\\\\").replace(/ $/, "\\b");
+                latex = latex.replace(/\\/g, "\\\\");
+                    // .replace(/ $/, "\\b");
                 _.each(["*", ".", "+", "?", "{", "}", "(", ")"],
                        function(c) {
                            latex = latex.replace(
