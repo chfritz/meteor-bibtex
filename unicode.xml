@@ -39455,9 +39455,6 @@ for borrowings from their work
  <entity id="xfr" set="STIX">
   <comment>* multiple shapes, excluded</comment>
  </entity>
- <entity id="xfr" set="9573-13-isomfrk">
-  <desc>/frak x, lower case x</desc>
- </entity>
  <font name="hlcrf8t" pos="120"/>
  <surrogate mathvariant="fraktur" ref="U00078"/>
  <description unicode="3.1">MATHEMATICAL FRAKTUR SMALL X</description>
