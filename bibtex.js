@@ -1,4 +1,3 @@
-// Write your package code here!
 
 // Original work by Henrik Muehe (c) 2010
 // CommonJS port by Mikola Lysenko 2013
@@ -24,34 +23,36 @@
 // ------------------------------------------------------------
 //
 // wrapped into a meteor package and extended with latex commands and
-// author parseing by Christian Fritz
+// author parsing by Christian Fritz
 //
 
 
 function BibtexParser() {
-    this.pos = 0;
-    this.lastStart = 0;
-    this.input = "";
-    
-    this.entries = {};
-    this.comments = [];
-    this.strings = {
-        jan: "January",
-        feb: "February",
-        mar: "March",      
-        apr: "April",
-        may: "May",
-        jun: "June",
-        jul: "July",
-        aug: "August",
-        sep: "September",
-        oct: "October",
-        nov: "November",
-        dec: "December"
-    };
-    this.currentKey = "";
-    this.currentEntry = "";
-    
+
+    this.init = function() {
+        this.pos = 0;
+        this.lastStart = 0;
+        this.input = "";
+        
+        this.entries = {};
+        this.comments = [];
+        this.strings = {
+            jan: "January",
+            feb: "February",
+            mar: "March",      
+            apr: "April",
+            may: "May",
+            jun: "June",
+            jul: "July",
+            aug: "August",
+            sep: "September",
+            oct: "October",
+            nov: "November",
+            dec: "December"
+        };
+        this.currentKey = "";
+        this.currentEntry = "";
+    }    
 
     this.setInput = function(t) {
         this.input = t;
@@ -70,7 +71,8 @@ function BibtexParser() {
         if (this.input.substring(this.pos, this.pos+s.length) == s) {
             this.pos += s.length;
         } else {
-            throw "Token mismatch, expected " + s + ", found " + this.input.substr(this.pos, 300) + "\n" + (new Error()).stack;
+            throw "Token mismatch, expected " + s + ", found "
+                + this.input.substr(this.pos, 300) + "\n" + (new Error()).stack;
         }
         this.skipWhitespace();
     }
@@ -117,7 +119,8 @@ function BibtexParser() {
                     this.match("}");
                     return this.input.substring(start, end);
                 }
-            } else if (this.input[this.pos] == '{' && this.input[this.pos-1] != '\\') {
+            } else if (this.input[this.pos] == '{'
+                       && this.input[this.pos-1] != '\\') {
                 bracecount++;
             } else if (this.pos == this.input.length-1) {
                 throw "Unterminated value" + this.input.substr(start, 100);
@@ -151,10 +154,11 @@ function BibtexParser() {
             var k = this.key();
             if (this.strings[k.toLowerCase()]) {
                 return this.strings[k];
-            } else if (k.match("^[0-9]+$")) {
-                return k;
+            // } else if (k.match("^[0-9]+$")) {
             } else {
-                throw "Value expected:" + this.input.substr(start, 100);
+                return k;
+            // } else {
+            //     throw "Value expected:" + this.input.substr(start, 100);
             }
         }
         return value;     
@@ -178,7 +182,7 @@ function BibtexParser() {
                 throw "Runaway key";
             }
             
-            if (this.input[this.pos].match("[a-zA-Z0-9_:\\./\?-]")) {
+            if (this.input[this.pos].match("[a-zA-Z0-9@_:\\./\?\+\-]")) {
                 this.pos++
             } else {
                 return this.input.substring(start, this.pos);
@@ -187,13 +191,14 @@ function BibtexParser() {
     }
 
     this.key_equals_value = function() {
-        var key = this.key();
+        var key = this.key().toLowerCase();
         if (this.tryMatch("=")) {
             this.match("=");
             var val = this.value(key);
             return [ key, val ];
         } else {
-            throw "... = value expected, equals sign missing:" + this.input.substr(this.pos, 100);
+            throw "... = value expected, equals sign missing:"
+                + this.input.substr(this.pos, 100);
         }
     }
 
@@ -286,18 +291,8 @@ function BibtexParser() {
                     // ------ Generate author/editor_short:
                     _.each(["author", "editor"], function(role) {
                         if (entry[role]) {
-                            // console.log("create short for", entry[role]);
+                            // console.log("create shorts for", entry);
                             entry[role + "_short"] =
-                                // _.map(entry[role], function(a) {
-                                //     var parts = a.split(", ");
-                                //     return parts[0] + ", "
-                                //         + _.map(parts[1].split(" "), function(part) {
-                                //             // console.log(part);
-                                //             return part[0]
-                                //             // for people like J Benton:
-                                //                 + (part.length > 1 ? "." : "");
-                                //         }).join(" ");
-                                // });
                                 _.map(entry[role], function(name) {
                                     var last = name.lastnames.join(" ")
                                         + (name.firstnames.length > 0 ? "," : "");
@@ -314,10 +309,15 @@ function BibtexParser() {
                 }
             } catch (e) {
                 console.log("exception", (e.stack ? e.stack : e));
+                // TODO: store all errors and return them with result
+                // (and show a warning including these errors on the
+                // page); add the entire entry to the error (from
+                // previous @ to next; or at least the entry id); do
+                // this by creating a good and uniform exception class
+                // incl. message and entry
+                
                 // seek to next "@"
-                // console.log(this.pos);
                 this.skipTo("@");
-                // console.log(this.pos);
             }
         }
 
@@ -454,6 +454,8 @@ function BibtexParser() {
     this.convert = function(raw, key) {
         var self = this;
 
+        // console.log("convert", key, raw);
+        
         // raw = raw.replace("\n", " ");
         raw = raw.replace(/[\n\t\r ]+/g, " "); // condense whitespace
         
@@ -472,7 +474,7 @@ function BibtexParser() {
 
         // ------ Parse names ------
         if (key == "author" || key == "editor") {
-                        
+
             // split names by "and" or every other comma
             rtv = _.map(rtv.split(/\band\b/), function(part) {
                 return part.trim();
@@ -520,6 +522,9 @@ function BibtexParser() {
         // return raw;
     }  
 
+
+    // ---------------------------------------------------------
+    // Constructor
     
     // console.log("start");
 
@@ -577,11 +582,16 @@ function BibtexParser() {
     // console.log("done");   
 }
 
-var b = new BibtexParser();
+var b;
 
 //Runs the parser
 Bibtex = {
     parse: function(input) {
+        if (!b) {
+            b = new BibtexParser();
+        }
+
+        b.init();
         b.setInput(input);
         b.bibtex();
         return b.entries;

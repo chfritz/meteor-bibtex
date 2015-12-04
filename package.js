@@ -1,8 +1,8 @@
 Package.describe({
     name: 'chfritz:bibtex',
-    version: '0.0.1',
+    version: '0.0.2',
     // Brief, one-line summary of the package.
-    summary: 'A simple bibtex parser',
+    summary: 'A bibtex parser that also translates special characters and parses names',
     // URL to the Git repository containing the source code for this package.
     git: 'https://github.com/chfritz/meteor-bibtex',
     // By default, Meteor will default to using README.md for documentation.
