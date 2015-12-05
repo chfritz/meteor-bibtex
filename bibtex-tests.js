@@ -1,7 +1,7 @@
 
 var test = 1;
 var a = _.indexBy(JSON.parse(Assets.getText("test/test"+test+".json")), 'id');
-var b = Bibtex.parse(Assets.getText("test/test"+test+".bib"));
+var b = Bibtex.parse(Assets.getText("test/test"+test+".bib")).entries;
 _.each(b, function(e, key) {
     e.key = key;
     e.id = key;
