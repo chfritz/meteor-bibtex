@@ -26,15 +26,26 @@
 // author parsing by Christian Fritz
 //
 
+class BibtexError extends Error {
+    constructor(message, parser) {
+        super(message);
+        this.message = message;
+        this.context = parser.input.substr(parser.pos, 100);
+        this.line = parser.line;
+        this.stack = (new Error()).stack;
+    }
+}
 
 function BibtexParser() {
 
     this.init = function() {
         this.pos = 0;
+        this.line = 1;
         this.lastStart = 0;
         this.input = "";
         
         this.entries = {};
+        this.errors = [];
         this.comments = [];
         this.strings = {
             jan: "January",
@@ -71,8 +82,7 @@ function BibtexParser() {
         if (this.input.substring(this.pos, this.pos+s.length) == s) {
             this.pos += s.length;
         } else {
-            throw "Token mismatch, expected " + s + ", found "
-                + this.input.substr(this.pos, 300) + "\n" + (new Error()).stack;
+            throw new BibtexError("Token mismatch, expected " + s, this);
         }
         this.skipWhitespace();
     }
@@ -89,6 +99,9 @@ function BibtexParser() {
 
     this.skipWhitespace = function() {
         while (this.isWhitespace(this.input[this.pos])) {
+            if (this.input[this.pos] == "\n") {
+                this.line++;
+            }
             this.pos++;
         }
         if (this.input[this.pos] == "%") {
@@ -123,7 +136,7 @@ function BibtexParser() {
                        && this.input[this.pos-1] != '\\') {
                 bracecount++;
             } else if (this.pos == this.input.length-1) {
-                throw "Unterminated value" + this.input.substr(start, 100);
+                throw new BibtexError("Unterminated value", this);
             }
             this.pos++;
         }
@@ -138,7 +151,7 @@ function BibtexParser() {
                 this.match('"');
                 return this.input.substring(start, end);
             } else if (this.pos == this.input.length-1) {
-                throw "Unterminated value:" + this.input.substr(start, 100);
+                throw new BibtexError("Unterminated value", this);
             }
             this.pos++;
         }
@@ -179,7 +192,7 @@ function BibtexParser() {
         var start = this.pos;
         while(true) {
             if (this.pos == this.input.length) {
-                throw "Runaway key";
+                throw new BibtexError("Runaway key", this);
             }
             
             if (this.input[this.pos].match("[a-zA-Z0-9@_:\\./\?\+\-]")) {
@@ -197,8 +210,7 @@ function BibtexParser() {
             var val = this.value(key);
             return [ key, val ];
         } else {
-            throw "... = value expected, equals sign missing:"
-                + this.input.substr(this.pos, 100);
+            throw new BibtexError("Value expected, missing equals sign?", this);
         }
     }
 
@@ -244,7 +256,7 @@ function BibtexParser() {
         var start = this.pos;
         while(true) {
             if (this.pos == this.input.length) {
-                throw "Runaway comment";
+                throw new BibtexError("Runaway comment", this);
             }
             
             if (this.input[this.pos] != '}') {
@@ -308,13 +320,15 @@ function BibtexParser() {
                     });
                 }
             } catch (e) {
-                console.log("exception", (e.stack ? e.stack : e));
+                console.log("exception", e.message, e.stack);
                 // TODO: store all errors and return them with result
                 // (and show a warning including these errors on the
                 // page); add the entire entry to the error (from
                 // previous @ to next; or at least the entry id); do
                 // this by creating a good and uniform exception class
                 // incl. message and entry
+
+                this.errors.push(e);
                 
                 // seek to next "@"
                 this.skipTo("@");
@@ -563,7 +577,9 @@ function BibtexParser() {
         }, {normal: {}, diacritic: {}});
     // console.log("mapping", this.mapping);
     // console.log("mapping length", this.mapping.length);
-    if (this.mapping.normal == {}) throw new Meteor.Error("mapping is empty!");
+    if (this.mapping.normal == {})
+        throw new Meteor.Error("mapping is empty!");
+
     regex = this.regex = {};
     _.each(this.mapping, function(val, type) {
         regex[type] = new RegExp( "(" +
@@ -594,6 +610,9 @@ Bibtex = {
         b.init();
         b.setInput(input);
         b.bibtex();
-        return b.entries;
+        return {
+            entries: b.entries,
+            errors: b.errors
+        };
     }
 };
