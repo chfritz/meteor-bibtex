@@ -273,7 +273,17 @@ function BibtexParser() {
     }
 
     this.bibtex = function() {
-        while(this.tryMatch("@")) {
+        // while(this.tryMatch("@")) {
+        while (this.pos < this.input.length) {
+            if (!this.tryMatch("@")) {
+                var start = this.pos;
+                this.skipTo("@");
+                var end = this.pos;
+                // there is text in between entries: ignore but report
+                this.errors.push(new BibtexError(
+                    "There is spurious text in between entries: \""
+                        + this.input.substring(start, end) + "\"", this));
+            }
             try {
                 this.lastStart = this.pos;
                 var d = this.directive().toUpperCase();
