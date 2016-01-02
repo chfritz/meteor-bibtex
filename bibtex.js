@@ -105,7 +105,8 @@ function BibtexParser() {
             this.pos++;
         }
         if (this.input[this.pos] == "%") {
-            while(this.input[this.pos] != "\n") {
+            while(this.input[this.pos] != "\n"
+                  && !this.atEnd()) {
                 this.pos++;
             }
             this.skipWhitespace();
@@ -119,6 +120,10 @@ function BibtexParser() {
         }
     }
 
+    this.atEnd = function() {
+        return (this.pos >= this.input.length);
+    }
+    
     this.value_braces = function() {
         var bracecount = 0;
         this.match("{");
@@ -274,7 +279,8 @@ function BibtexParser() {
 
     this.bibtex = function() {
         // while(this.tryMatch("@")) {
-        while (this.pos < this.input.length) {
+        while (!this.atEnd()) {
+            // console.log("pos:", this.pos);
             if (!this.tryMatch("@")) {
                 var start = this.pos;
                 this.skipTo("@");
@@ -303,6 +309,8 @@ function BibtexParser() {
                 this.match("}");
 
                 if (isEntry) {
+                    // console.log("parsed", this.currentEntry);
+
                     var entry = this.entries[this.currentEntry];
 
                     // ------ Add original bibtex as field
