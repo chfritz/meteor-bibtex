@@ -51,3 +51,10 @@ _.each(a, function(val, key) {
         }
     });
 });
+
+Tinytest.add("Ampersand in item name", function (test) {
+    var g = Bibtex.parse(Assets.getText("test/testAmpersandInItemName.bib")).entries;
+    _.each(g, function (e, key) {
+        test.equal(key, 'Billam&2015', 'Missing ampersand in item name');
+    });
+});

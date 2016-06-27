@@ -200,7 +200,7 @@ function BibtexParser() {
                 throw new BibtexError("Runaway key", this);
             }
             
-            if (this.input[this.pos].match("[a-zA-Z0-9@_:\\./\?\+\-]")) {
+            if (this.input[this.pos].match("[a-zA-Z0-9@&_:\\./\?\+\-]")) {
                 this.pos++
             } else {
                 return this.input.substring(start, this.pos);
