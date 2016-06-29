@@ -32,4 +32,5 @@ Package.onTest(function(api) {
     api.addAssets('test/test1.json', ['server']);
     api.addAssets('test/test2.bib', ['server']);
     api.addAssets('test/test2.json', ['server']);
+    api.addAssets('test/testAmpersandInItemName.bib', ['server']);
 });
