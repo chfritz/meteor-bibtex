@@ -43,14 +43,14 @@ function BibtexParser() {
         this.line = 1;
         this.lastStart = 0;
         this.input = "";
-        
+
         this.entries = {};
         this.errors = [];
         this.comments = [];
         this.strings = {
             jan: "January",
             feb: "February",
-            mar: "March",      
+            mar: "March",
             apr: "April",
             may: "May",
             jun: "June",
@@ -63,12 +63,12 @@ function BibtexParser() {
         };
         this.currentKey = "";
         this.currentEntry = "";
-    }    
+    }
 
     this.setInput = function(t) {
         this.input = t;
     }
-    
+
     this.getEntries = function() {
         return this.entries;
     }
@@ -123,7 +123,7 @@ function BibtexParser() {
     this.atEnd = function() {
         return (this.pos >= this.input.length);
     }
-    
+
     this.value_braces = function() {
         var bracecount = 0;
         this.match("{");
@@ -179,9 +179,9 @@ function BibtexParser() {
             //     throw "Value expected:" + this.input.substr(start, 100);
             }
         }
-        return value;     
+        return value;
     }
-    
+
     this.value = function(key) {
         var values = [];
         values.push(this.single_value(key));
@@ -199,7 +199,7 @@ function BibtexParser() {
             if (this.pos == this.input.length) {
                 throw new BibtexError("Runaway key", this);
             }
-            
+
             if (this.input[this.pos].match("[a-zA-Z0-9@&_:\\./\?\+\-]")) {
                 this.pos++
             } else {
@@ -263,7 +263,7 @@ function BibtexParser() {
             if (this.pos == this.input.length) {
                 throw new BibtexError("Runaway comment", this);
             }
-            
+
             if (this.input[this.pos] != '}') {
                 this.pos++
             } else {
@@ -305,7 +305,7 @@ function BibtexParser() {
                     this.entry(d);
                     isEntry = true;
                     // console.log("parsed", this.currentEntry);
-                }            
+                }
                 this.match("}");
 
                 if (isEntry) {
@@ -347,7 +347,7 @@ function BibtexParser() {
                 // incl. message and entry
 
                 this.errors.push(e);
-                
+
                 // seek to next "@"
                 this.skipTo("@");
             }
@@ -358,12 +358,12 @@ function BibtexParser() {
 
     // ---------------------------------------------------------
     // Names
-    
+
     /** first character in string is lower case */
     function firstIsLowerCase(string) {
         var next = string.charCodeAt(0);
         return (next >= 97 && next <= 122);
-    }   
+    }
 
     /** parse a name into parts, respecting brackets, and keeping
         commas in separate groups */
@@ -387,7 +387,7 @@ function BibtexParser() {
                     if (memo[memo.length-1] != ""
                         || character == ",") {
                         memo.push(character);
-                        
+
                         if (character == ",") {
                             // commas shall always be in a separate group,
                             // so start a new one already (e.g., "Tom,P"
@@ -422,16 +422,16 @@ function BibtexParser() {
         if (comma > 0 && parts[comma+1] != "Jr."
             && parts[comma+1] != "Sen.") {
             // TODO: allow other suffixes, like III.
-            
+
             // first kind, e.g.:  parts =
             //  [["de", "la", "Fritz", "Lang", "O'Brian", ",", "Christian",
             //  "Wilhelm", ",", "Jr."]] or
             var before = parts.slice(0, comma);
             var propositionsEnd = _.findLastIndex(before, firstIsLowerCase);
-            
+
             var after = parts.slice(comma+1);
             var suffixComma = after.indexOf(",");
-            
+
             return {
                 propositions: before.slice(0, propositionsEnd+1),
                 lastnames: before.slice(propositionsEnd+1),
@@ -444,7 +444,7 @@ function BibtexParser() {
             // second kind, e.g., parts =
             //  [["Christian", "Wilhelm", "de", "la", "Fritz", "Lang",
             //  "O'Brian", ",", "Jr."]]
-        
+
             var propositionsStart = _.findIndex(parts, firstIsLowerCase);
             var propositionsEnd = _.findLastIndex(parts, firstIsLowerCase);
 
@@ -455,7 +455,7 @@ function BibtexParser() {
                     propositions: parts.slice(propositionsStart, propositionsEnd+1),
                     lastnames: parts.slice(propositionsEnd+1),
                     suffixes: []
-                }                
+                }
                 // still need to split of the suffix
                 var suffixComma = rtv.lastnames.indexOf(",");
                 if (suffixComma > 0) {
@@ -476,7 +476,7 @@ function BibtexParser() {
                     propositions: [],
                     lastnames: [parts[indexOfLast]],
                     suffixes: (suffixComma > 0 ? parts.slice(suffixComma+1) : [])
-                }                
+                }
             }
         }
     }
@@ -487,16 +487,44 @@ function BibtexParser() {
         var self = this;
 
         // console.log("convert", key, raw);
-        
+
         // raw = raw.replace("\n", " ");
         raw = raw.replace(/[\n\t\r ]+/g, " "); // condense whitespace
-        
+
+        /** returns text broken into two pieces, before and after the delimiter
+        is found at level -1 (to find closing piece of open section)
+        e.g., delimiters = "{}"
+        */
+        function splitOnBalanced(text, delimiters) {
+          var before = "";
+          var level = 0;
+          for (var i=0; i < text.length; i++) {
+            if (text[i] == delimiters[0]) level++;
+            if (text[i] == delimiters[1]) level--;
+            if (level == -1) {
+              return {before: before, after: text.slice(i)};
+            } else {
+              before += text[i];
+            }
+          }
+        }
+
+        // replace textit sections
+        function replaceItalics(text) {
+          return text.replace(/\\textit\{(.*)/, function(whole, rest) {
+              console.log("textit: ", rest);
+              var split = splitOnBalanced(rest, "{}");
+              return "<i>" + split.before + "</i>" + replaceItalics(split.after);
+            });
+        }
+        var rtv = replaceItalics(raw);
+
         // ------- Translate latex special characters into unicode
-        var rtv = raw.replace(this.regex.normal, function(whole, latex) {
+        rtv = rtv.replace(this.regex.normal, function(whole, latex) {
             // console.log("matched", latex);
             return self.mapping.normal[latex];
         });
-        var rtv = rtv.replace(this.regex.diacritic, function(whole, latex, nextChar) {
+        rtv = rtv.replace(this.regex.diacritic, function(whole, latex, nextChar) {
             // diacritic unicode characters go *after* the character
             // to be modified, whereas in latex the command goes
             // before the character, e.g., "\=P" -> "P\u0304"
@@ -524,13 +552,13 @@ function BibtexParser() {
             rtv = _.map(rtv, function(name) {
                 parsed = parseName(name);
                 // console.log("parsed", parsed);
-                
+
                 return parsed;
             });
         }
-        
+
         // ------ Remove all remaining { and } outside of $'s:
-        function cleanBrackets(value) {        
+        function cleanBrackets(value) {
             var mathmode = false;
             return _.reduce(value, function(memo, character) {
                 if ((character != "{" && character !== "}")
@@ -549,15 +577,15 @@ function BibtexParser() {
         } else {
             rtv = cleanBrackets(rtv);
         }
-        
+
         return rtv;
         // return raw;
-    }  
+    }
 
 
     // ---------------------------------------------------------
     // Constructor
-    
+
     // console.log("start");
 
     var unicode = xml2js.parseStringSync(Assets.getText("unicode.xml"));
@@ -613,7 +641,7 @@ function BibtexParser() {
             }).join("|")+ ")" + (type == "diacritic" ? "{?(.)}?" : ""), "g");
     });
     // console.log("regex", this.regex);
-    // console.log("done");   
+    // console.log("done");
 }
 
 var b;
