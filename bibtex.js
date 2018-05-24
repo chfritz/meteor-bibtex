@@ -598,7 +598,8 @@ function BibtexParser() {
             if (character.latex
                 // do not replace single characters
                 && character.latex[0].replace("{","").replace("}","").length > 1
-                && character.latex[0].indexOf("\\") >= 0
+                && (character.latex[0].indexOf("\\") >= 0 ||
+                  character.latex[0] == "--")
                 && id.substr(0,2) == "U0"
                 // && character.$.type != "diacritic" // things like \^ and \'
                ) {

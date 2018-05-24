@@ -11181,6 +11181,11 @@ for borrowings from their work
  <description>EN DASH</description>
 </character>
 
+<character id="U02013" dec="8211" mode="text" type="normal">
+ <latex>--</latex>
+ <description>EN DASH</description>
+</character>
+
 <character id="U02014" dec="8212" mode="mixed" type="normal">
  <afii>EF25</afii>
  <latex>\textemdash </latex>

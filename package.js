@@ -1,6 +1,6 @@
 Package.describe({
     name: 'chfritz:bibtex',
-    version: '0.1.7',
+    version: '0.1.8',
     // Brief, one-line summary of the package.
     summary: 'A bibtex parser that also translates special characters and parses names',
     // URL to the Git repository containing the source code for this package.
