@@ -622,7 +622,7 @@ function BibtexParser() {
             }
             return memo;
         }, {normal: {}, diacritic: {}});
-    console.log("mapping", this.mapping);
+    // console.log("mapping", this.mapping);
     // console.log("mapping length", this.mapping.length);
     if (this.mapping.normal == {})
         throw new Meteor.Error("mapping is empty!");
